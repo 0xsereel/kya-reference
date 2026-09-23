@@ -36,7 +36,7 @@ interface IMandateModule {
 
     /// @dev Caller is not a compliance contract acting through `callModuleFunction`.
     error OnlyCompliance(address caller);
-    /// @dev The compliance contract is not bound to a token, so its registries cannot be resolved.
+    /// @dev The compliance contract is not bound to this module.
     error ComplianceNotBound(address compliance);
     /// @dev The agent wallet is not registered under the mandate's principal in the identity registry.
     error IdentityMismatch(address agent, address expectedPrincipal, address actualIdentity);
@@ -48,8 +48,12 @@ interface IMandateModule {
     error AgentWalletMismatch(address claimed, address actual);
     /// @dev The claim's mandate hash differs from the hash of the submitted mandate.
     error MandateHashMismatch(bytes32 claimed, bytes32 actual);
-    /// @dev The agentId is not registered in the ERC-8004 identity registry, or differs from the claim's.
+    /// @dev The claim's agentId differs from the agentId in the submitted mandate.
+    error AgentIdMismatch(uint256 claimed, uint256 actual);
+    /// @dev The agentId is not registered in the ERC-8004 identity registry.
     error UnknownAgentId(uint256 agentId);
+    /// @dev A zero address was passed where one is not allowed.
+    error ZeroAddress();
     /// @dev No mandate is stored for this compliance and agent.
     error MandateNotFound(address compliance, address agent);
     /// @dev Caller is neither the compliance contract nor a management key holder on the principal's identity.
