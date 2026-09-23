@@ -142,8 +142,10 @@ abstract contract TREXFixture is Test {
             )
         );
 
-        // Only KYC is a required topic. Every holder must carry all required topics, so requiring AGENT_MANDATE
-        // here would make ordinary investors unverifiable. The issuer is still trusted for both topics.
+        // TEST-ONLY SIMPLIFICATION: only KYC is a required topic. T-REX's isVerified demands every required topic
+        // from every holder, so requiring AGENT_MANDATE here would make ordinary investors unverifiable. In a real
+        // deployment, decide deliberately which topics are required. The claim issuer is still trusted for both
+        // topics, which is what MandateModule checks.
         topicsRegistry.addClaimTopic(KYC_TOPIC);
         uint256[] memory topics = new uint256[](2);
         topics[0] = KYC_TOPIC;
