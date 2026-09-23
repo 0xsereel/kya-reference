@@ -33,9 +33,10 @@ The token owner registers the agent wallet in the token's identity registry unde
 
 | Component | Version |
 |---|---|
-| T-REX (ERC-3643) | TBD (pinned in Stage 2) |
-| ONCHAINID | TBD (pinned in Stage 2) |
-| OpenZeppelin (4.x) | TBD (pinned in Stage 2) |
+| T-REX (ERC-3643) | 4.1.6 |
+| ONCHAINID | 2.1.0 (the version T-REX 4.1.6 locks) |
+| OpenZeppelin (4.x) | 4.9.3 (the version T-REX 4.1.6 locks) |
+| forge-std | v1.9.7 |
 | Solidity | 0.8.17, optimizer 200 runs |
 | ERC-8004 draft revision (mock) | TBD (confirmed in Stage 4) |
 
