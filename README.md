@@ -38,7 +38,7 @@ The token owner registers the agent wallet in the token's identity registry unde
 | OpenZeppelin (4.x) | 4.9.3 (the version T-REX 4.1.6 locks) |
 | forge-std | v1.9.7 |
 | Solidity | 0.8.17, optimizer 200 runs |
-| ERC-8004 draft revision (mock) | TBD (confirmed in Stage 4) |
+| ERC-8004 (mock) | Draft as published at eips.ethereum.org, created 2025-08-13, read 2026-09-23 (the draft has no revision number) |
 
 Versions are fixed and are not meant to float.
 
