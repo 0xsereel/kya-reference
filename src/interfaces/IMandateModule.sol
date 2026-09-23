@@ -44,6 +44,8 @@ interface IMandateModule {
     error ClaimNotFound(address principal);
     /// @dev The claim issuer is not trusted for the AGENT_MANDATE topic.
     error UntrustedClaimIssuer(address issuer);
+    /// @dev The issuer no longer vouches for the claim: bad signature, or the claim was revoked by the issuer.
+    error ClaimNotValid(address principal, address issuer);
     /// @dev The claim's agent wallet differs from the wallet in the mandate call.
     error AgentWalletMismatch(address claimed, address actual);
     /// @dev The claim's mandate hash differs from the hash of the submitted mandate.

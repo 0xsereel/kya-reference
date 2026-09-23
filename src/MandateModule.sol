@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IIdentity} from "@onchain-id/solidity/contracts/interface/IIdentity.sol";
+import {IClaimIssuer} from "@onchain-id/solidity/contracts/interface/IClaimIssuer.sol";
 import {AbstractModule} from "@trex/contracts/compliance/modular/modules/AbstractModule.sol";
 import {IModule} from "@trex/contracts/compliance/modular/modules/IModule.sol";
 import {IModularCompliance} from "@trex/contracts/compliance/modular/IModularCompliance.sol";
@@ -115,17 +116,16 @@ contract MandateModule is AbstractModule, IMandateModule {
     }
 
     /// @inheritdoc IModule
-    /// @dev No bound-compliance guard: state is keyed by `msg.sender`, so a caller can only touch its own slot.
-    function moduleTransferAction(address _from, address, uint256 _value) external override {
+    function moduleTransferAction(address _from, address, uint256 _value) external override onlyComplianceCall {
         if (_mandates[msg.sender][_from].principal == address(0)) return;
         spent[msg.sender][_from][block.timestamp / 1 days] += _value;
     }
 
     /// @inheritdoc IModule
-    function moduleMintAction(address, uint256) external override {}
+    function moduleMintAction(address, uint256) external override onlyComplianceCall {}
 
     /// @inheritdoc IModule
-    function moduleBurnAction(address, uint256) external override {}
+    function moduleBurnAction(address, uint256) external override onlyComplianceCall {}
 
     /// @inheritdoc IModule
     function canComplianceBind(address) external pure override returns (bool) {
@@ -148,7 +148,8 @@ contract MandateModule is AbstractModule, IMandateModule {
 
     /// @dev Finds the AGENT_MANDATE claim on `principal` that names `agent`, among claims from issuers trusted for
     ///      the topic. Reverts with ClaimNotFound if the principal has no such claim at all, UntrustedClaimIssuer if
-    ///      none comes from a trusted issuer, and AgentWalletMismatch if no trusted claim names `agent`.
+    ///      none comes from a trusted issuer, AgentWalletMismatch if no trusted claim names `agent`, and
+    ///      ClaimNotValid if the matching claim fails the issuer's `isClaimValid` (bad signature or revoked).
     function _matchingClaim(IIdentityRegistry registry, address principal, address agent)
         private
         view
@@ -158,26 +159,50 @@ contract MandateModule is AbstractModule, IMandateModule {
         if (ids.length == 0) revert ClaimNotFound(principal);
 
         ITrustedIssuersRegistry issuers = registry.issuersRegistry();
-        address firstIssuer;
         address firstTrustedWallet;
         bool trustedSeen;
 
         for (uint256 i = 0; i < ids.length; i++) {
-            (,, address issuer,, bytes memory data,) = IIdentity(principal).getClaim(ids[i]);
-            if (!issuers.isTrustedIssuer(issuer) || !issuers.hasClaimTopic(issuer, AgentClaim.AGENT_MANDATE)) {
-                if (i == 0) firstIssuer = issuer;
-                continue;
-            }
+            (address issuer, bytes memory data) = _claimData(principal, ids[i], issuers);
+            if (issuer == address(0)) continue;
 
             (uint256 claimAgentId, address claimWallet, bytes32 claimHash,) = AgentClaim.decode(data);
-            if (claimWallet == agent) return (claimAgentId, claimHash);
+            if (claimWallet == agent) {
+                _requireValid(principal, ids[i], issuer);
+                return (claimAgentId, claimHash);
+            }
             if (!trustedSeen) {
                 trustedSeen = true;
                 firstTrustedWallet = claimWallet;
             }
         }
 
-        if (!trustedSeen) revert UntrustedClaimIssuer(firstIssuer);
+        if (!trustedSeen) {
+            (,, address firstIssuer,,,) = IIdentity(principal).getClaim(ids[0]);
+            revert UntrustedClaimIssuer(firstIssuer);
+        }
         revert AgentWalletMismatch(firstTrustedWallet, agent);
+    }
+
+    /// @dev Returns the claim's issuer and data, or a zero issuer if the issuer is not trusted for the topic.
+    function _claimData(address principal, bytes32 id, ITrustedIssuersRegistry issuers)
+        private
+        view
+        returns (address, bytes memory)
+    {
+        (,, address issuer,, bytes memory data,) = IIdentity(principal).getClaim(id);
+        if (!issuers.isTrustedIssuer(issuer) || !issuers.hasClaimTopic(issuer, AgentClaim.AGENT_MANDATE)) {
+            return (address(0), data);
+        }
+        return (issuer, data);
+    }
+
+    /// @dev Re-checks the claim with its issuer at mandate time, so a claim the issuer revoked after `addClaim`
+    ///      is refused.
+    function _requireValid(address principal, bytes32 id, address issuer) private view {
+        (,,, bytes memory sig, bytes memory data,) = IIdentity(principal).getClaim(id);
+        if (!IClaimIssuer(issuer).isClaimValid(IIdentity(principal), AgentClaim.AGENT_MANDATE, sig, data)) {
+            revert ClaimNotValid(principal, issuer);
+        }
     }
 }
