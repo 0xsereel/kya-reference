@@ -1,6 +1,6 @@
 # kya-reference
 
-[![CI](https://github.com/<GITHUB_USER>/kya-reference/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/<GITHUB_USER>/kya-reference/actions/workflows/ci.yml)
+[![CI](https://github.com/0xsereel/kya-reference/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/0xsereel/kya-reference/actions/workflows/ci.yml)
 
 **This is reference code. It is unaudited, is not intended for production, and comes with no warranty. Do not deploy it to a network that holds real value.**
 
