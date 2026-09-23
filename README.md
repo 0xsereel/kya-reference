@@ -4,12 +4,12 @@
 
 **This is reference code. It is unaudited, is not intended for production, and comes with no warranty. Do not deploy it to a network that holds real value.**
 
-Companion repo to the post [Know Your Agent for Tokenized Securities](<BLOG_POST_URL>). It demonstrates sections 3 and 4 of the post on a real ERC-3643 (T-REX) stack: an agent's wallet is registered under its principal's ONCHAINID, the link is backed by a trusted-issuer claim that references an ERC-8004 agent identity, and a compliance module (`MandateModule`) enforces the principal's mandate on every transfer the agent sends.
+Companion repo to the post [Know Your Agent for Tokenized Securities](https://sereel.com/blog/24). It demonstrates sections 3 and 4 of the post on a real ERC-3643 (T-REX) stack: an agent's wallet is registered under its principal's ONCHAINID, the link is backed by a trusted-issuer claim that references an ERC-8004 agent identity, and a compliance module (`MandateModule`) enforces the principal's mandate on every transfer the agent sends.
 
 ## Quickstart
 
 ```sh
-git clone --recursive https://github.com/<GITHUB_USER>/kya-reference.git
+git clone --recursive https://github.com/0xsereel/kya-reference.git
 cd kya-reference && forge build
 forge test
 ```
