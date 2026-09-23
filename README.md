@@ -50,7 +50,25 @@ Versions are fixed and are not meant to float.
 
 ## Gas
 
-Added gas of `moduleCheck` plus `moduleTransferAction` on an agent transfer, compared with an investor transfer: TBD (measured in Stage 11).
+What the module adds to one `token.transfer`, measured as the difference between the same transfer between the same accounts with and without the module bound to the compliance contract (`moduleCheck` plus `moduleTransferAction`, and their dispatch through `ModularCompliance`):
+
+| Transfer | Added gas |
+|---|---|
+| Investor with no mandate | ~21,100 |
+| Agent, later in the same UTC day | ~35,500 |
+| Agent, first transfer of a UTC day | ~52,600 |
+
+The first transfer of a day costs more because it writes a fresh spend slot. Numbers are from `forge test --match-path test/integration/ModuleGas.t.sol -vv` on solc 0.8.17 with the optimizer at 200 runs, and will shift with the compiler and the pinned library versions.
+
+## Coverage and gas snapshot
+
+```sh
+forge coverage --no-match-coverage "(mocks|test|interfaces)"       # 100% lines, statements, branches, functions on MandateModule.sol and AgentClaim.sol
+forge snapshot --no-match-contract "(Fuzz|Invariants)"              # writes .gas-snapshot
+forge snapshot --check --tolerance 5 --no-match-contract "(Fuzz|Invariants)"
+```
+
+Fuzz and invariant tests are left out of the snapshot because their entries record run statistics, which change from run to run.
 
 ## Scope
 
