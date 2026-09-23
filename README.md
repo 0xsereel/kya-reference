@@ -42,6 +42,12 @@ The token owner registers the agent wallet in the token's identity registry unde
 
 Versions are fixed and are not meant to float.
 
+## Behavior notes
+
+- **Forced transfers count toward the daily cap.** T-REX's `forcedTransfer` calls `compliance.transferred` like any transfer, so the module cannot tell it apart. The issuer's forced transfer from an agent wallet is never blocked, even by a revoked or expired mandate, but the amount is recorded as that day's spend.
+- **One mandate claim per issuer and principal.** ONCHAINID keys a claim by issuer and topic, so a second `AGENT_MANDATE` claim from the same issuer on the same identity replaces the first.
+- **Test fixture simplification.** The fixture makes only KYC a required claim topic. T-REX requires every holder to carry every required topic, so requiring `AGENT_MANDATE` would make ordinary investors unverifiable. A real deployment should choose its required topics deliberately.
+
 ## Gas
 
 Added gas of `moduleCheck` plus `moduleTransferAction` on an agent transfer, compared with an investor transfer: TBD (measured in Stage 11).
